@@ -1,0 +1,17 @@
+services:
+  api:
+    command: npm run dev:api
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./:/app
+      - /app/node_modules
+
+  web:
+    command: npm run dev:web
+    environment:
+      NODE_ENV: development
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - ./:/app
+      - /app/node_modules

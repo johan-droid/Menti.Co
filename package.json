@@ -1,0 +1,28 @@
+{
+  "name": "menti-co",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w @mentico/web",
+    "dev:api": "npm run dev -w @mentico/api",
+    "dev:worker": "npm run dev -w @mentico/worker",
+    "docker:up": "docker compose up --build -d",
+    "docker:down": "docker compose down",
+    "docker:dev:up": "docker compose -f docker-compose.yml -f compose.dev.yml up --build -d",
+    "docker:dev:down": "docker compose -f docker-compose.yml -f compose.dev.yml down",
+    "docker:dev:rebuild": "docker compose -f docker-compose.yml -f compose.dev.yml down && docker compose -f docker-compose.yml -f compose.dev.yml up --build -d",
+    "docker:dev:reset": "docker compose -f docker-compose.yml -f compose.dev.yml down -v && docker compose -f docker-compose.yml -f compose.dev.yml up --build -d",
+    "docker:logs:api": "docker compose logs -f api",
+    "docker:logs:mongo": "docker compose logs -f mongo",
+    "docker:logs:web": "docker compose logs -f web",
+    "docker:ps": "docker compose ps",
+    "start:web": "npm run build -w @mentico/web && npm run start -w @mentico/web",
+    "start:api": "npm run start -w @mentico/api",
+    "build": "npm run build --workspaces",
+    "typecheck": "npm run typecheck --workspaces"
+  }
+}
