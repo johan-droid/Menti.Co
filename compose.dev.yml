@@ -1,17 +1,17 @@
 services:
   api:
-    command: npm run dev:api
-    environment:
-      NODE_ENV: development
+    command: uv run uvicorn main:app --host 0.0.0.0 --port 4000 --reload
     volumes:
-      - ./:/app
-      - /app/node_modules
+      - ./backend/api:/app
+    environment:
+      DEBUG: "true"
 
   web:
-    command: npm run dev:web
+    command: npm run dev
     environment:
       NODE_ENV: development
       WATCHPACK_POLLING: "true"
     volumes:
-      - ./:/app
+      - ./frontend/web:/app
       - /app/node_modules
+      - /app/.next

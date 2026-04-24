@@ -1,0 +1,116 @@
+services:
+  postgres:
+    image: ankane/pgvector:latest
+    container_name: mentico-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mentico
+      POSTGRES_USER: mentico
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
+    container_name: mentico-es
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: mentico-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+
+  minio:
+    image: minio/minio:latest
+    container_name: mentico-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+
+  redis:
+    image: redis:7
+    container_name: mentico-redis
+    ports:
+      - "6379:6379"
+
+  api:
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile
+    container_name: mentico-api
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - elasticsearch
+      - qdrant
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://mentico:password@postgres:5432/mentico
+      - ES_URL=http://elasticsearch:9200
+      - QDRANT_URL=http://qdrant:6333
+      - MINIO_URL=http://minio:9000
+      - MINIO_USER=admin
+      - MINIO_PASSWORD=password
+    ports:
+      - "4000:4000"
+
+  worker:
+    build:
+      context: ./backend/worker
+      dockerfile: Dockerfile
+    container_name: mentico-worker
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - elasticsearch
+      - qdrant
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://mentico:password@postgres:5432/mentico
+      - ES_URL=http://elasticsearch:9200
+      - QDRANT_URL=http://qdrant:6333
+      - MINIO_URL=http://minio:9000
+      - MINIO_USER=admin
+      - MINIO_PASSWORD=password
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+  web:
+    build:
+      context: ./frontend/web
+      dockerfile: Dockerfile
+    container_name: mentico-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api:4000
+    ports:
+      - "3000:3000"
+
+volumes:
+  pg-data:
+  es-data:
+  qdrant-data:
+  minio-data:

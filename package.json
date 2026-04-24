@@ -3,13 +3,16 @@
   "private": true,
   "version": "0.1.0",
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "backend/api",
+    "backend/worker",
+    "backend/packages/*",
+    "frontend/web",
+    "frontend/packages/*"
   ],
   "scripts": {
     "dev:web": "npm run dev -w @mentico/web",
-    "dev:api": "npm run dev -w @mentico/api",
-    "dev:worker": "npm run dev -w @mentico/worker",
+    "dev:api": "cd backend/api && uv run uvicorn main:app --reload --port 4000",
+    "dev:worker": "cd backend/worker && uv run celery -A worker worker --loglevel=info",
     "docker:up": "docker compose up --build -d",
     "docker:down": "docker compose down",
     "docker:dev:up": "docker compose -f docker-compose.yml -f compose.dev.yml up --build -d",

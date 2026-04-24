@@ -1,0 +1,16 @@
+[project]
+name = "mentico-scripts"
+version = "0.1.0"
+description = "Management and ingestion scripts for Menti.Co"
+requires-python = ">=3.12"
+dependencies = [
+    "biopython>=1.87",
+    "elasticsearch>=9.3.0",
+    "psycopg[binary]>=3.3.3",
+    "python-dotenv>=1.2.2",
+    "qdrant-client>=1.17.1",
+    "sentence-transformers>=5.4.1",
+]
+
+[tool.uv]
+package = false

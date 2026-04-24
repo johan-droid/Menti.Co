@@ -1,41 +1,29 @@
+version: "3.8"
+
 services:
-  mongo:
-    image: mongo:7
-    container_name: mentico-mongo
-    restart: unless-stopped
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: mh_library
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
     ports:
-      - "27017:27017"
+      - "5432:5432"
     volumes:
-      - mongo-data:/data/db
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile.api
-    container_name: mentico-api
-    restart: unless-stopped
-    depends_on:
-      - mongo
-    environment:
-      API_PORT: 4000
-      CORS_ORIGIN: http://localhost:3000
-      MONGO_URI: mongodb://mongo:27017/mentico
-      JWT_SECRET: replace-me
+    build: ./backend/api
     ports:
       - "4000:4000"
-
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile.web
-    container_name: mentico-web
-    restart: unless-stopped
-    depends_on:
-      - api
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:4000
-    ports:
-      - "3000:3000"
+      DATABASE_URL: postgresql://postgres:secret@db:5432/mh_library
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+    depends_on:
+      - db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
-  mongo-data:
+  pgdata:
